@@ -2,69 +2,78 @@ package com.example.demo;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 public class HelloController {
 
     @GetMapping("/")
     public String home() { return "home"; }
 
-    @GetMapping("/camelize")
-    public String camelize(@RequestParam(name = "original", required = true) String original,
-                           @RequestParam(name = "initialCap", defaultValue = "false") boolean initialCap) {
+    @GetMapping("/movies/movie")
+    public Movie getMovie() {
+        Movie godfather = new Movie();
+        godfather.setTitle("The Godfather");
+        godfather.setMinutes(175);
+        godfather.setGenre("Crime, Drama");
+        godfather.setRating(9.2f);
+        godfather.setMetascore(100);
+        godfather.setDescription("The aging patriarch of an organized crime dynasty transfers control of his clandestine empire to his reluctant son.");
+        godfather.setVotes(1561591);
+        godfather.setGross(134.97f);
+        godfather.setYear("1972");
 
-        if (initialCap) {
-            original = original.substring(0,1).toUpperCase() + original.substring(1);
-        }
-        while (original.contains("_")) {
-            int index = original.indexOf("_");
-            String nextChar = original.substring(index+1, index+2);
-            original = original.substring(0, index) + nextChar.toUpperCase() + original.substring(index+2);
-        }
-        return original;
+        Movie.Cast[] cast = new Movie.Cast[5];
+
+        Movie.Cast.Person person1 = new Movie.Cast.Person();
+        person1.setRole("Director");
+        person1.setFirstName("Francis Ford");
+        person1.setLastName("Copolla");
+
+        Movie.Cast.Person person2 = new Movie.Cast.Person();
+        person2.setRole("Star");
+        person2.setFirstName("Marlon");
+        person2.setLastName("Brando");
+
+        Movie.Cast.Person person3 = new Movie.Cast.Person();
+        person3.setRole("Star");
+        person3.setFirstName("Al");
+        person3.setLastName("Pacino");
+
+        Movie.Cast.Person person4 = new Movie.Cast.Person();
+        person4.setRole("Star");
+        person4.setFirstName("James");
+        person4.setLastName("Caan");
+
+        Movie.Cast.Person person5 = new Movie.Cast.Person();
+        person5.setRole("Star");
+        person5.setFirstName("Diane");
+        person5.setLastName("Keaton");
+
+        cast[0] = new Movie.Cast();
+        cast[1] = new Movie.Cast();
+        cast[2] = new Movie.Cast();
+        cast[3] = new Movie.Cast();
+        cast[4] = new Movie.Cast();
+        cast[0].setPerson(person1);
+        cast[1].setPerson(person2);
+        cast[2].setPerson(person3);
+        cast[3].setPerson(person4);
+        cast[4].setPerson(person5);
+        godfather.setCredits(cast);
+
+        return godfather;
     }
 
-    @GetMapping("/redact")
-    public String redact(@RequestParam(name = "original") String original,
-                         @RequestParam(name = "badWord") String[] badWords) {
-
-        String[] words = original.split(" ");
-        for (int i = 0; i < words.length; i++) {
-            for (String badWord : badWords) {
-                if (words[i].equals(badWord)) {
-                    words[i] = "";
-                    for (int j = 0; j < badWord.length(); j++) {
-                        words[i] += "*";
-                    }
-                    break;
-                }
-            }
+    @PostMapping("/movies/gross/total")
+    public Map<String, Float> calcTotal(@RequestBody Movie[] movies) {
+        Map<String, Float> total = new HashMap<>();
+        float sum = 0f;
+        for (Movie movie : movies) {
+            sum += movie.getGross();
         }
-        original = String.join(" ", words);
-        return original;
-    }
-
-    @PostMapping("/encode")
-    public String encode(@RequestParam(name = "message") String message,
-                         @RequestParam(name = "key") String key) {
-
-        String ALPHABET = "abcdefghijklmnopqrstuvwxyz";
-        String result = "";
-        for (char ch : message.toCharArray()) {
-            if (ch == ' ') {
-                result += " ";
-                continue;
-            }
-            int index = ALPHABET.indexOf(ch);
-            result += key.substring(index, index+1);
-        }
-        return result;
-    }
-
-    @PostMapping("/s/{find}/{replacement}")
-    public String sed(@PathVariable(name = "find") String find,
-                      @PathVariable(name = "replacement") String replacement,
-                      @RequestBody() String message) {
-
-        return message.replaceAll(find, replacement);
+        total.put("result", sum);
+        return total;
     }
 }
